@@ -1,0 +1,229 @@
+<apex:page controller="GrantActivitiesTimelineController" sidebar="false">
+<style type="text/css">
+
+.dateSection{
+border:1px solid #ccc;
+width:100px;
+height:100px;
+float:left;
+position:relative;
+}
+.imgSection{
+float:left;
+width:100px;
+height:100px;
+position:absolute;
+
+}
+.day{
+position: absolute;
+z-index: 5;
+line-height: 25px;
+display: block;
+font-size: 29px;
+font-weight:300;
+}
+.month{
+margin-top: 25px;
+font-size: 19px;
+font-weight: 300;
+display: block;
+}
+.topRow{
+background:#e9e9e9;
+border:1px solid #dcdcdc;
+padding:10px;
+}
+.titleHead{
+font-size:12px;
+color:#333;
+font-weight:700;
+}
+.results{
+background:#f4f5f9;
+}
+.sides{
+background:#eeeeee;
+}
+.dateResults{
+    position:absolute;
+    top:-100000px;
+
+}
+</style>
+     <script>
+     var j$ = jQuery.noConflict();
+        j$(document).ready(function(){
+            changeBckColor4Neg();
+            
+            j$( "#datepicker" ).datepicker();
+            
+            var futureDiv = document.getElementsByClassName('future');
+            var l = futureDiv.length;
+            if(l=="0"){
+                document.getElementById('partitionLine').style.display = "none";
+            }
+            else{
+                document.getElementById('partitionLine').style.display = "block";
+                var parMarginTop = 80 * l;
+                parMarginTop = parMarginTop * 1;
+                parMarginTop =  parMarginTop - 33;
+                document.getElementById("partitionLine").style.marginTop = parMarginTop + "px";
+            }
+            
+        });
+        function changeBckColor4Neg()
+        {
+            var tds = document.getElementsByClassName('future');
+            for(var i=0;i< tds.length;i++)
+            {
+                
+                
+                
+                
+                
+                //tds[i].innerHTML = parseFloat(tds[i].innerHTML).toFixed(2);
+                //if(parseFloat(tds[i].innerHTML) < 0)
+                    //tds[i].style.color = 'red';
+                    if (i==tds.length-1){
+                    //j$('.future > p:last-child')
+
+            //.before('<p>charan</p>')
+
+                    }
+            }
+            
+            
+        }
+  function getTodayDate()
+    {
+        var d = new Date();
+        var a = d.getDate();
+        var b = d.getMonth();
+        var c = d.getFullYear();
+        a = a*1;b = b*1;c = c*1;
+        a = a;
+        b = b+1;
+        c = c;
+        var qVal = b+"/"+a+"/"+c;
+            j$('#datepicker').attr("value",qVal);
+    }
+    function run(){
+        var count = 0;
+        var initDate = j$('#datepicker').val();
+        var strDate = new Date(initDate);
+        
+        var dtArray = new Array();
+        var dateArray = document.getElementsByClassName("dateResults");
+        for (var i=0; i<dateArray.length; i++)
+        {
+            dtArray[i] = new Date(dateArray[i].innerHTML);            
+            if( dtArray[i]> strDate ) {count++;}                 
+        
+        }
+        var tVal = j$("#partitionLine").css("marginTop");
+        var finMarTopVal = count * 80;
+        finMarTopVal = finMarTopVal *1;
+        finMarTopVal = finMarTopVal - 33;
+        
+           j$("#partitionLine").animate({"marginTop":finMarTopVal}, 1000);
+        //document.getElementById("partitionLine").style.marginTop = finMarTopVal + "px";
+        
+        
+    
+    }
+    </script>
+
+
+    <apex:form >
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" class="topRow">
+        <tr>
+            <td width="20%">
+                 <apex:inputText id="membNam" value="{!grantId}" >
+        <c:autoComplete autocomplete_textbox="{!$Component.membNam}" objectname="Grant__c" additionalfield="Grant_Number__c"/>
+        </apex:inputText>                
+            <apex:commandButton value="Search" action="{!searchGrantDetails}"/>
+        </td>
+        <td width="57%" align="center">
+           <h2 style="font-size:17px;font-weight:300;color:#333;"> <apex:outputLink value="/{!g.id}">{!g.name}</apex:outputLink> 
+            {!g.Grant_Number__c} </h2>
+        </td>
+        <td width="23%">
+           <a href="javascript:void(0);" onclick="getTodayDate();">Today</a>
+           <input type="text" id="datepicker" />
+           <input type="button" class="" onclick="run();" value="Search" />
+            <!--<apex:inputText value="{!selectDate}" styleClass="todayDate"/>
+            <apex:commandButton value="Search Date" action="{!searchGrantDetailsWithDate}"/>   -->
+        </td>
+        </tr>
+    </table>
+    <table cellpadding="5" cellspacing="3" border="0" width="100%">
+      <tr>
+       <td valign="top" width="20%" class="sides">
+       <apex:selectList value="{!taskFilter}" size="1">
+            <apex:selectOption itemValue="All Tasks" itemLabel="All Tasks"/>
+            <apex:selectOption itemValue="My Tasks" itemLabel="My Tasks"/>
+        </apex:selectList> <br />
+        <apex:inputCheckbox value="{!grantFlag}" onclick="formDisAndGR()"/>Grant <br />
+        <apex:inputCheckbox value="{!disbursementsFlag}" onclick="formOnlyGR()"/>Disbursements <br />
+        <apex:inputCheckbox value="{!grantReportsFlag}" onclick="makeWholeSetEmpty()"/>GrantReports <br />
+        
+        
+        <apex:actionFunction action="{!formDisAndGR}" name="formDisAndGR" />
+
+        <apex:actionFunction action="{!onlyGR}" name="formOnlyGR" />
+        
+        <apex:actionFunction action="{!makeEmpty}" name="makeWholeSetEmpty" />
+ </td>
+        <td class="results">
+         <div id="partitionLine" style="position:absolute;z-index;7;">
+               <img src="{!$Resource.timeLine}" />
+            </div>
+        <apex:repeat value="{!dataSetOne}" var="dis">
+        <table cellspacing="0" cellpadding="0" height="80">
+          <tr>
+           <td>
+           
+            <apex:image value="{!IF (dis.f5 == 'future', $Resource.futureLogo, IF(dis.f5 == 'pastNotCompleted',$Resource.pastNotCompletedtLogo, IF(dis.f5 == 'pastCompleted', $Resource.pastCompletedLogo, $Resource.pastCompletedLogo)) )}"/> 
+            
+            <div style="position:absolute;z-index:5;margin-left:24px;margin-top:-60px;font-size:14px;font-weight:700;">
+               
+                <apex:outputText styleClass="day" value="{0,date,dd}" >           
+                   <apex:param value="{!dis.f6}" /> 
+               </apex:outputText>  
+               <apex:outputText styleClass="month" value="{0,date,MMM}" >  
+                   <apex:param value="{!dis.f6}" /> 
+               </apex:outputText>
+            </div>
+            </td>
+            <td>
+           <div class="titleHead"> <apex:outputLink value="/{!dis.f7}"> <apex:outputText value="{!dis.f1}"/> </apex:outputLink></div>
+           <div><em><apex:outputText value="{!dis.f2}"/></em> </div>
+           <div><apex:outputText value="{!dis.f4}" style="color:#287ccb;"/> - &nbsp;
+           <apex:outputText value="{!dis.f3}"/>
+           </div>
+          
+           <!-- <apex:outputText value="{!dis.f5}"/> -->
+         </td>
+         
+         </tr>
+         </table>
+         <div class="{!dis.f5}"></div>
+        </apex:repeat>
+        
+       <!-- <apex:repeat value="{!t}" var="ta" >
+            <apex:outputText value="{!ta.subject}"/> 
+        </apex:repeat> -->
+         </td>
+         <td valign="top" style="background:white;" width="10%">
+             <img src="{!$Resource.disbrusment}" />
+         </td>
+       </tr>
+    </table>
+    </apex:form>
+    <apex:repeat value="{!dataSetOne}" var="dis">
+     <apex:outputText value="{0,date,MM'/'dd'/'yyyy}" styleClass="dateResults">           
+                   <apex:param value="{!dis.f6}" /> 
+               </apex:outputText>
+    </apex:repeat>
+</apex:page>
